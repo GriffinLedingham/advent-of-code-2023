@@ -1,7 +1,7 @@
 export enum Colors {
-  Red = "Red",
-  Green = "Green",
-  Blue = "Blue",
+  Red = "red",
+  Green = "green",
+  Blue = "blue",
 }
 
 export const problemInput02_02 = `Game 1: 12 blue, 15 red, 2 green; 17 red, 8 green, 5 blue; 8 red, 17 blue; 9 green, 1 blue, 4 red
