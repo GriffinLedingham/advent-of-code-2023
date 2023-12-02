@@ -1,4 +1,5 @@
 # advent-of-code-2023
+![CI](https://github.com/GriffinLedingham/advent-of-code-2023/actions/workflows/test.yml/badge.svg)
 
 My problem submissions for Advent of Code 2023, built with TypeScript & Node.
 
