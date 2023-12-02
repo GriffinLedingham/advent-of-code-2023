@@ -1,7 +1,8 @@
+import { time, timeEnd } from "../../utils/time";
 import { Colors, bagConstraints } from "./fixtures/input";
 
 export const solve02_01 = (input: string) => {
-  console.time("solve02_01");
+  time("solve02_01");
 
   const lines = input.split("\n");
 
@@ -41,6 +42,6 @@ export const solve02_01 = (input: string) => {
       gameIdSums += parseInt(gameId);
   }
 
-  console.timeEnd("solve02_01");
+  timeEnd("solve02_01");
   return gameIdSums;
 };

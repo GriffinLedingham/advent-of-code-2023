@@ -1,3 +1,5 @@
+import { time, timeEnd } from "../../utils/time";
+
 const stringNums = {
   one: 1,
   two: 2,
@@ -11,7 +13,7 @@ const stringNums = {
 } as const;
 
 export const solve01_02 = (input: string) => {
-  console.time("solve01_02");
+  time("solve01_02");
 
   const lines = input.split("\n");
   let sum = 0;
@@ -45,6 +47,6 @@ export const solve01_02 = (input: string) => {
 
     sum += parseInt(calibrationValues);
   }
-  console.timeEnd("solve01_02");
+  timeEnd("solve01_02");
   return sum;
 };
