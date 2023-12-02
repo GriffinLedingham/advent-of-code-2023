@@ -2,7 +2,7 @@
 
 My problem submissions for Advent of Code 2023, built with TypeScript & Node.
 
-https://adventofcode.com/
+[https://adventofcode.com/2023](https://adventofcode.com/2023)
 
 ## Usage
 
