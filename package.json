@@ -5,7 +5,7 @@
   "author": "Griffin Ledingham <gcledingham@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "start": "DEBUG=true ts-node src/index.ts",
+    "start": "DEBUG=true node --max_old_space_size=8192 -r ts-node/register src/index.ts",
     "test": "DEBUG=false jest"
   },
   "dependencies": {

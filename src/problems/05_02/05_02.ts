@@ -31,14 +31,31 @@ const RawMapKeysLookup: Record<string, MapKeys> = {
   "humidity-to-location map:": MapKeys.humidityToLocation,
 };
 
-export const solve05_01 = (input: string) => {
-  time("solve05_01");
+// BRUTE FORCE BABY - 10m 45s to run this thing to completion... lol
+export const solve05_02 = (input: string) => {
+  time("solve05_02");
 
   const lines = input.split("\n");
 
-  const seeds = lines.shift()?.replace("seeds: ", "").split(" ").map(Number);
+  // way too many seeds to map, just keep track of valid seed ID ranges
+  const seedIdRanges: number[][] = [];
+  const seeds = lines
+    .shift()
+    ?.replace("seeds: ", "")
+    .match(/(\d+\s\d+)/g)
+    ?.reduce((acc, seedPair) => {
+      const [startNum, len] = seedPair.split(" ");
+      seedIdRanges.push([
+        parseInt(startNum),
+        parseInt(startNum) + parseInt(len),
+      ]);
+      return [...acc, parseInt(startNum) + parseInt(len)];
+    }, [] as number[]);
 
   if (!seeds) throw new Error(`Could not parse seeds from input: ${input}`);
+
+  // get max seed ID, so we know what to brute force up to
+  const maxSeed = Math.max(...seeds);
 
   const ranges: Record<
     MapKeys,
@@ -53,21 +70,7 @@ export const solve05_01 = (input: string) => {
     [MapKeys.humidityToLocation]: [],
   } as any;
 
-  const seedData: Record<number, SeedData> = seeds.reduce((acc, seed) => {
-    acc[seed] = {
-      id: seed,
-      soil: null,
-      fertilizer: null,
-      water: null,
-      light: null,
-      temperature: null,
-      humidity: null,
-      location: null,
-    };
-
-    return acc;
-  }, {} as any);
-
+  // build out the ranges of mappings for each set of id's
   let currHashKey: MapKeys = null as unknown as MapKeys;
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
@@ -95,70 +98,69 @@ export const solve05_01 = (input: string) => {
     });
   }
 
-  // Map the seeds to the all other props
-  for (let seed of Object.values(seedData)) {
+  let lowestLocation = Infinity;
+
+  // Map the seeds to the all other props - BRUTE FORCE BABY
+  for (let seed = 0; seed <= maxSeed; seed++) {
+    // check if seed is in range of valid seed ID's
+    if (!seedIdRanges.find((range) => range[0] <= seed && range[1] >= seed))
+      continue;
+
     const soilData = ranges[MapKeys.seedToSoil].find(
-      (map) => map.source[0] <= seed.id && map.source[1] >= seed.id
+      (map) => map.source[0] <= seed && map.source[1] >= seed
     );
-    seed.soil = soilData
-      ? (seed.soil = seed.id - soilData.source[0] + soilData.dest[0])
-      : seed.id;
+    const soilId = soilData
+      ? seed - soilData.source[0] + soilData.dest[0]
+      : seed;
 
     const fertilizerData = ranges[MapKeys.soilToFertilizer].find(
-      (map) => map.source[0] <= seed.soil && map.source[1] >= seed.soil
+      (map) => map.source[0] <= soilId && map.source[1] >= soilId
     );
-    seed.fertilizer = fertilizerData
-      ? (seed.fertilizer =
-          seed.soil - fertilizerData.source[0] + fertilizerData.dest[0])
-      : seed.soil;
+    const fertId = fertilizerData
+      ? soilId - fertilizerData.source[0] + fertilizerData.dest[0]
+      : soilId;
 
     const waterData = ranges[MapKeys.fertilizerToWater].find(
-      (map) =>
-        map.source[0] <= seed.fertilizer && map.source[1] >= seed.fertilizer
+      (map) => map.source[0] <= fertId && map.source[1] >= fertId
     );
-    seed.water = waterData
-      ? (seed.water = seed.fertilizer - waterData.source[0] + waterData.dest[0])
-      : seed.fertilizer;
+    const waterId = waterData
+      ? fertId - waterData.source[0] + waterData.dest[0]
+      : fertId;
 
     const lightData = ranges[MapKeys.waterToLight].find(
-      (map) => map.source[0] <= seed.water && map.source[1] >= seed.water
+      (map) => map.source[0] <= waterId && map.source[1] >= waterId
     );
-    seed.light = lightData
-      ? (seed.light = seed.water - lightData.source[0] + lightData.dest[0])
-      : seed.water;
+    const lightId = lightData
+      ? waterId - lightData.source[0] + lightData.dest[0]
+      : waterId;
 
     const temperatureData = ranges[MapKeys.lightToTemperature].find(
-      (map) => map.source[0] <= seed.light && map.source[1] >= seed.light
+      (map) => map.source[0] <= lightId && map.source[1] >= lightId
     );
-    seed.temperature = temperatureData
-      ? (seed.temperature =
-          seed.light - temperatureData.source[0] + temperatureData.dest[0])
-      : seed.light;
+    const tempId = temperatureData
+      ? lightId - temperatureData.source[0] + temperatureData.dest[0]
+      : lightId;
 
     const humidityData = ranges[MapKeys.temperatureToHumidity].find(
-      (map) =>
-        map.source[0] <= seed.temperature && map.source[1] >= seed.temperature
+      (map) => map.source[0] <= tempId && map.source[1] >= tempId
     );
-    seed.humidity = humidityData
-      ? (seed.humidity =
-          seed.temperature - humidityData.source[0] + humidityData.dest[0])
-      : seed.temperature;
+    const humId = humidityData
+      ? tempId - humidityData.source[0] + humidityData.dest[0]
+      : tempId;
 
     const locationData = ranges[MapKeys.humidityToLocation].find(
-      (map) => map.source[0] <= seed.humidity && map.source[1] >= seed.humidity
+      (map) => map.source[0] <= humId && map.source[1] >= humId
     );
-    seed.location = locationData
-      ? (seed.location =
-          seed.humidity - locationData.source[0] + locationData.dest[0])
-      : seed.humidity;
+    const locationId = locationData
+      ? humId - locationData.source[0] + locationData.dest[0]
+      : humId;
+
+    if (locationId < lowestLocation) {
+      lowestLocation = locationId;
+    }
   }
 
-  // Get the lowest location of the initial seeds
-  const lowestLocation = Math.min(
-    ...Object.values(seedData).map((seed) => seed.location)
-  );
-
-  timeEnd("solve05_01");
+  timeEnd("solve05_02");
 
   return lowestLocation;
 };
